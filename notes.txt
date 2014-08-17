@@ -1,0 +1,430 @@
+> table(train$Sex)
+female   male 
+   314    577 
+   
+> prop.table(table(train$Sex, train$Survived))    
+                  0          1
+  female 0.09090909 0.26150393
+  male   0.52525253 0.12233446
+
+> prop.table(table(train$Sex, train$Survived),1) #proportions by row       
+                 0         1
+  female 0.2579618 0.7420382
+  male   0.8110919 0.1889081
+  
+> prop.table(table(train$Sex, train$Survived),2) #proportions by column        
+                 0         1
+  female 0.1475410 0.6812865
+  male   0.8524590 0.3187135
+  
+  > summary(train$Age)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+   0.42   20.12   28.00   29.70   38.00   80.00     177 
+
+> aggregate(Survived ~ Child + Sex, data=train, FUN=sum)
+  Child    Sex Survived
+1     0 female      195
+2     1 female       38
+3     0   male       86
+4     1   male       23
+
+> aggregate(Survived ~ Child + Sex, data=train, FUN=function(x) {round(sum(x)/length(x), 3)})
+  Child    Sex Survived
+1     0 female    0.753
+2     1 female    0.691
+3     0   male    0.166
+4     1   male    0.397
+
+> aggregate(Survived ~ Age + Sex, data=train, FUN=function(x) {round(sum(x)/length(x), 3)})
+      Age    Sex Survived
+1    0.75 female    1.000
+2    1.00 female    1.000
+3    2.00 female    0.333
+4    3.00 female    0.500
+5    4.00 female    1.000
+6    5.00 female    1.000
+7    6.00 female    0.500
+8    7.00 female    1.000
+9    8.00 female    0.500
+10   9.00 female    0.000
+11  10.00 female    0.000
+12  11.00 female    0.000
+13  13.00 female    1.000
+14  14.00 female    0.750
+15  14.50 female    0.000
+16  15.00 female    1.000
+17  16.00 female    0.833
+18  17.00 female    0.833
+19  18.00 female    0.615
+20  19.00 female    1.000
+21  20.00 female    0.000
+22  21.00 female    0.571
+23  22.00 female    0.833
+24  23.00 female    0.800
+25  24.00 female    0.875
+26  25.00 female    0.400
+27  26.00 female    0.600
+28  27.00 female    0.833
+29  28.00 female    0.714
+30  29.00 female    0.714
+31  30.00 female    0.818
+32  30.50 female    0.000
+33  31.00 female    0.714
+34  32.00 female    0.667
+35  32.50 female    1.000
+36  33.00 female    1.000
+37  34.00 female    1.000
+38  35.00 female    1.000
+39  36.00 female    1.000
+40  37.00 female    0.000
+41  38.00 female    0.800
+42  39.00 female    0.667
+43  40.00 female    0.833
+44  41.00 female    0.500
+45  42.00 female    1.000
+46  43.00 female    0.500
+47  44.00 female    0.667
+48  45.00 female    0.500
+49  47.00 female    0.500
+50  48.00 female    0.750
+51  49.00 female    1.000
+52  50.00 female    0.800
+53  51.00 female    1.000
+54  52.00 female    1.000
+55  53.00 female    1.000
+56  54.00 female    1.000
+57  55.00 female    1.000
+58  56.00 female    1.000
+59  57.00 female    0.000
+60  58.00 female    1.000
+61  60.00 female    1.000
+62  62.00 female    1.000
+63  63.00 female    1.000
+64   0.42   male    1.000
+65   0.67   male    1.000
+66   0.83   male    1.000
+67   0.92   male    1.000
+68   1.00   male    0.600
+69   2.00   male    0.250
+70   3.00   male    1.000
+71   4.00   male    0.400
+72   6.00   male    1.000
+73   7.00   male    0.000
+74   8.00   male    0.500
+75   9.00   male    0.500
+76  10.00   male    0.000
+77  11.00   male    0.333
+78  12.00   male    1.000
+79  14.00   male    0.000
+80  15.00   male    0.000
+81  16.00   male    0.091
+82  17.00   male    0.143
+83  18.00   male    0.077
+84  19.00   male    0.111
+85  20.00   male    0.231
+86  20.50   male    0.000
+87  21.00   male    0.059
+88  22.00   male    0.067
+89  23.00   male    0.100
+90  23.50   male    0.000
+91  24.00   male    0.071
+92  24.50   male    0.000
+93  25.00   male    0.222
+94  26.00   male    0.231
+95  27.00   male    0.500
+96  28.00   male    0.111
+97  28.50   male    0.000
+98  29.00   male    0.231
+99  30.00   male    0.071
+100 30.50   male    0.000
+101 31.00   male    0.300
+102 32.00   male    0.467
+103 32.50   male    0.000
+104 33.00   male    0.000
+105 34.00   male    0.182
+106 34.50   male    0.000
+107 35.00   male    0.300
+108 36.00   male    0.267
+109 36.50   male    0.000
+110 37.00   male    0.200
+111 38.00   male    0.167
+112 39.00   male    0.125
+113 40.00   male    0.143
+114 40.50   male    0.000
+115 41.00   male    0.000
+116 42.00   male    0.300
+117 43.00   male    0.000
+118 44.00   male    0.167
+119 45.00   male    0.333
+120 45.50   male    0.000
+121 46.00   male    0.000
+122 47.00   male    0.000
+123 48.00   male    0.600
+124 49.00   male    0.500
+125 50.00   male    0.200
+126 51.00   male    0.167
+127 52.00   male    0.250
+128 54.00   male    0.000
+129 55.00   male    0.000
+130 55.50   male    0.000
+131 56.00   male    0.333
+132 57.00   male    0.000
+133 58.00   male    0.000
+134 59.00   male    0.000
+135 60.00   male    0.333
+136 61.00   male    0.000
+137 62.00   male    0.333
+138 64.00   male    0.000
+139 65.00   male    0.000
+140 66.00   male    0.000
+141 70.00   male    0.000
+142 70.50   male    0.000
+143 71.00   male    0.000
+144 74.00   male    0.000
+145 80.00   male    1.000
+
+> train$Child[train$Age < 13] <- 1 #child is 12 and younger
+> aggregate(Survived ~ Child + Sex, data=train, FUN=function(x) {round(sum(x)/length(x), 3)})
+  Child    Sex Survived
+1     0 female    0.759
+2     1 female    0.594
+3     0   male    0.163
+4     1   male    0.568
+
+> summary(train$Fare)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   0.00    7.91   14.45   32.20   31.00  512.30 
+> summary(train$Fare == 0)
+   Mode   FALSE    TRUE    NA's 
+logical     876      15       0 
+
+> aggregate(Survived ~ Child + Sex + (train$Fare == 0), data=train, 
++           FUN=function(x) {round(sum(x)/length(x), 3)})
+  Child    Sex train$Fare == 0 Survived
+1     0 female           FALSE    0.759
+2     1 female           FALSE    0.594
+3     0   male           FALSE    0.166
+4     1   male           FALSE    0.568
+5     0   male            TRUE    0.067 ** 15 males, very little survival rate
+
+> aggregate(Survived ~ Sex + (train$Fare == 0), data=train, 
++           FUN=function(x) {round(sum(x)/length(x), 3)})
+     Sex train$Fare == 0 Survived
+1 female           FALSE    0.742
+2   male           FALSE    0.192
+3   male            TRUE    0.067
+
+> aggregate(Survived ~ Sex + (train$Fare == 0), data=train, 
++           FUN=length)
+     Sex train$Fare == 0 Survived
+1 female           FALSE      314
+2   male           FALSE      562
+3   male            TRUE       15 **
+> aggregate(Survived ~ Sex + (train$Fare == 0), data=train, 
++           FUN=sum)
+     Sex train$Fare == 0 Survived
+1 female           FALSE      233
+2   male           FALSE      108
+3   male            TRUE        1 
+
+> aggregate(Survived ~ Fare2 + Pclass + Sex, data=train, FUN=function(x) {sum(x)/length(x)})
+   Fare2 Pclass    Sex  Survived
+1  20-30      1 female 0.8333333
+2    30+      1 female 0.9772727
+3  10-20      2 female 0.9142857
+4  20-30      2 female 0.9000000
+5    30+      2 female 1.0000000
+6    <10      3 female 0.5937500
+7  10-20      3 female 0.5813953
+8  20-30      3 female 0.3333333 **
+9    30+      3 female 0.1250000 **
+10   <10      1   male 0.0000000
+11 20-30      1   male 0.4000000
+12   30+      1   male 0.3837209
+13   <10      2   male 0.0000000
+14 10-20      2   male 0.1587302
+15 20-30      2   male 0.1600000
+16   30+      2   male 0.2142857
+17   <10      3   male 0.1115385
+18 10-20      3   male 0.2368421
+19 20-30      3   male 0.1250000
+20   30+      3   male 0.2400000
+
+> summary(combi)
+  PassengerId      Survived          Pclass                                    Name          Sex     
+ Min.   :   1   Min.   :0.0000   Min.   :1.000   Connolly, Miss. Kate            :   2   female:466  
+ 1st Qu.: 328   1st Qu.:0.0000   1st Qu.:2.000   Kelly, Mr. James                :   2   male  :843  
+ Median : 655   Median :0.0000   Median :3.000   Abbing, Mr. Anthony             :   1               
+ Mean   : 655   Mean   :0.3838   Mean   :2.295   Abbott, Mr. Rossmore Edward     :   1               
+ 3rd Qu.: 982   3rd Qu.:1.0000   3rd Qu.:3.000   Abbott, Mrs. Stanton (Rosa Hunt):   1               
+ Max.   :1309   Max.   :1.0000   Max.   :3.000   Abelson, Mr. Samuel             :   1               
+                NA's   :418                      (Other)                         :1301               
+      Age            SibSp            Parch            Ticket          Fare                     Cabin     
+ Min.   : 0.17   Min.   :0.0000   Min.   :0.000   CA. 2343:  11   Min.   :  0.000                  :1014  
+ 1st Qu.:21.00   1st Qu.:0.0000   1st Qu.:0.000   1601    :   8   1st Qu.:  7.896   C23 C25 C27    :   6  
+ Median :28.00   Median :0.0000   Median :0.000   CA 2144 :   8   Median : 14.454   B57 B59 B63 B66:   5  
+ Mean   :29.88   Mean   :0.4989   Mean   :0.385   3101295 :   7   Mean   : 33.295   G6             :   5  
+ 3rd Qu.:39.00   3rd Qu.:1.0000   3rd Qu.:0.000   347077  :   7   3rd Qu.: 31.275   B96 B98        :   4  
+ Max.   :80.00   Max.   :8.0000   Max.   :9.000   347082  :   7   Max.   :512.329   C22 C26        :   4  
+ NA's   :263                                      (Other) :1261   NA's   :1         (Other)        : 271  
+ Embarked
+  :  2   
+ C:270   
+ Q:123   
+ S:914   
+ 
+ > table(combi$Title)
+
+        Capt          Col          Don         Dona           Dr     Jonkheer         Lady        Major 
+           1            4            1            1            8            1            1            2 
+      Master         Miss         Mlle          Mme           Mr          Mrs           Ms          Rev 
+          61          260            2            1          757          197            2            8 
+         Sir the Countess 
+           1            1 
+           
+> table(combi$Title)
+
+   Col     Dr   Lady Master   Miss     Mr    Mrs     Ms    Rev    Sir 
+     4      8      4     61    262    757    198      2      8      5 
+     
+
+> table(combi$FamilyID) - adding Single
+
+       11Sage       2Harper       3Abbott       3Boulos       3Bourke        3Brown     3Caldwell 
+           11             4             3             3             3             4             3 
+     3Collyer      3Compton       3Coutts       3Crosby       3Danbom       3Davies        3Dodge 
+            3             3             3             3             3             5             3 
+        3Drew        3Elias    3Goldsmith         3Hart      3Hickman      3Johnson       3Klasen 
+            3             3             3             3             3             3             3 
+      3Mallet        3McCoy     3Moubarek        3Nakid     3Navratil      3Peacock        3Peter 
+            3             3             3             3             3             3             3 
+       3Quick      3Rosblom       3Samaan    3Sandstrom      3Spedden      3Taussig       3Thayer 
+            3             3             3             3             3             3             3 
+       3Touma 3van Billiard     3Van Impe        3Wells         3Wick      3Widener      4Allison 
+            3             3             3             3             3             3             4 
+     4Baclini       4Becker       4Carter         4Dean       4Herman     4Johnston      4Laroche 
+            4             4             4             4             4             4             4 
+        4West         5Ford      5Lefebre      5Palsson      5Ryerson      6Fortune       6Panula 
+            4             5             5             5             5             6             6 
+        6Rice        6Skoog    7Andersson      7Asplund      8Goodwin        Single         Small 
+            6             6             9             7             8           790           280 
+            
+            
+> table(combi$FamilyID3) - adding single, two p, three p. what is small here?
+
+    11Sage   4Allison   4Baclini    4Becker    4Carter      4Dean    4Herman  4Johnston   4Laroche      4West 
+        11          4          4          4          4          4          4          4          4          4 
+     5Ford   5Lefebre   5Palsson   5Ryerson   6Fortune    6Panula      6Rice     6Skoog 7Andersson   7Asplund 
+         5          5          5          5          6          6          6          6          9          7 
+  8Goodwin     Single      Small      Three        Two 
+         8        790         10        159        235 
+         
+         
+> table(train$SibSp, train$Survived)
+   
+      0   1
+  0 398 210
+  1  97 112
+  2  15  13
+  3  12   4
+  4  15   3
+  5   5   0
+  8   7   0
+  
+> table(combi$Title, combi$Age)
+        
+         0.17 0.33 0.42 0.67 0.75 0.83 0.92   1   2   3   4   5   6   7
+  Col       0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Dr        0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Lady      0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Master    0    1    1    1    1    3    1   5   5   4   5   1   4   3
+  Miss      1    0    0    0    2    0    1   5   7   3   5   4   2   1
+  Mr        0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Mrs       0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Ms        0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Rev       0    0    0    0    0    0    0   0   0   0   0   0   0   0
+  Sir       0    0    0    0    0    0    0   0   0   0   0   0   0   0
+        
+         7.12378640776699   8   9  10  11 11.5  12  13  14 14.5  15  16  17
+  Col                   0   0   0   0   0    0   0   0   0    0   0   0   0
+  Dr                    0   0   0   0   0    0   0   0   0    0   0   0   0
+  Lady                  0   0   0   0   0    0   0   0   0    0   0   0   0
+  Master                6   3   5   2   2    1   1   3   0    1   0   0   0
+  Miss                  6   3   5   2   1    0   2   2   3    1   4   7   6
+  Mr                    0   0   0   0   1    0   0   0   4    0   1  11  12
+  Mrs                   0   0   0   0   0    0   0   0   1    0   1   1   2
+  Ms                    0   0   0   0   0    0   0   0   0    0   0   0   0
+  Rev                   0   0   0   0   0    0   0   0   0    0   0   0   0
+  Sir                   0   0   0   0   0    0   0   0   0    0   0   0   0
+        
+          18 18.5 18.8168  19  20 20.5  21  22 22.3115942028986 22.5  23 23.5
+  Col      0    0       0   0   0    0   0   0                0    0   0    0
+  Dr       0    0       0   0   0    0   0   0                0    0   1    0
+  Lady     0    0       0   0   0    0   0   0                0    0   0    0
+  Master   0    0       1   0   0    0   0   0                1    0   0    0
+  Miss    14    1       4   6   6    0  10  15               37    0   7    0
+  Mr      19    2       0  19  17    1  31  21                0    1  15    1
+  Mrs      6    0       0   4   0    0   0   7                0    0   3    0
+  Ms       0    0       0   0   0    0   0   0                0    0   0    0
+  Rev      0    0       0   0   0    0   0   0                0    0   0    0
+  Sir      0    0       0   0   0    0   0   0                0    0   0    0
+        
+          24 24.5  25  26 26.5  27  28 28.5 28.8628808864266  29  30 30.5  31
+  Col      0    0   0   0    0   0   0    0                0   0   0    0   0
+  Dr       0    0   0   0    0   0   0    0                0   0   0    0   0
+  Lady     0    0   0   0    0   0   0    0                0   0   0    0   0
+  Master   0    0   0   0    0   0   0    0                0   0   0    0   0
+  Miss    11    0   3   4    0   5   4    0                0   3  13    1   5
+  Mr      26    1  28  21    1  19  22    3              136  18  22    1  13
+  Mrs     10    0   3   5    0   5   4    0               16   9   4    0   5
+  Ms       0    0   0   0    0   0   1    0                1   0   0    0   0
+  Rev      0    0   0   0    0   1   1    0                0   0   1    0   0
+  Sir      0    0   0   0    0   0   0    0                0   0   0    0   0
+        
+         31.875  32 32.5  33 33.0519801980198  34 34.5  35  36 36.5  37  38
+  Col         0   0    0   0                0   0    0   0   0    0   0   0
+  Dr          0   1    0   0                0   0    0   0   0    0   0   0
+  Lady        0   0    0   1                0   0    0   0   0    0   0   1
+  Master      0   0    0   0                0   0    0   0   0    0   0   0
+  Miss        3   1    1   3                0   1    0   5   5    0   2   4
+  Mr          0  20    3  12               13  12    2  12  19    2   6   6
+  Mrs         0   2    0   5                1   3    0   6   7    0   1   3
+  Ms          0   0    0   0                0   0    0   0   0    0   0   0
+  Rev         0   0    0   0                0   0    0   0   0    0   0   0
+  Sir         0   0    0   0                0   0    0   0   0    0   0   0
+        
+         38.5  39  40 40.5  41  42 42.4243119266055  43  44  45 45.5  46  47
+  Col       0   0   0    0   0   0                0   0   0   0    0   0   1
+  Dr        0   0   0    0   0   0                1   0   1   0    0   0   0
+  Lady      0   1   0    0   0   0                0   0   0   0    0   0   0
+  Master    0   0   0    0   0   0                0   0   0   0    0   0   0
+  Miss      0   2   2    0   1   1                0   0   0   2    0   0   0
+  Mr        1  12  11    3   6  14               27   6   6   7    2   6   9
+  Mrs       0   5   4    0   3   2               10   3   3  11    0   0   4
+  Ms        0   0   0    0   0   0                0   0   0   0    0   0   0
+  Rev       0   0   0    0   1   1                0   0   0   0    0   0   0
+  Sir       0   0   1    0   0   0                0   0   0   1    0   0   0
+        
+          48  49  50  51  52  53  54  55 55.5  56  57  58  59  60 60.5  61  62
+  Col      0   0   0   0   0   1   0   0    0   1   0   0   0   1    0   0   0
+  Dr       0   1   1   0   0   1   1   0    0   0   0   0   0   0    0   0   0
+  Lady     1   0   0   0   0   0   0   0    0   0   0   0   0   0    0   0   0
+  Master   0   0   0   0   0   0   0   0    0   0   0   0   0   0    0   0   0
+  Miss     0   0   3   0   0   0   1   0    0   0   0   2   0   0    0   0   0
+  Mr       6   6   8   5   3   0   4   4    1   2   3   2   2   2    1   5   4
+  Mrs      7   1   3   2   2   2   3   4    0   1   1   2   1   4    0   0   1
+  Ms       0   0   0   0   0   0   0   0    0   0   0   0   0   0    0   0   0
+  Rev      0   0   0   1   0   0   1   0    0   0   1   0   0   0    0   0   0
+  Sir      0   1   0   0   1   0   0   0    0   0   0   0   0   0    0   0   0
+        
+          63  64  65  66  67  70 70.5  71  74  76  80
+  Col      0   0   0   0   0   0    0   0   0   0   0
+  Dr       0   0   0   0   0   0    0   0   0   0   0
+  Lady     0   0   0   0   0   0    0   0   0   0   0
+  Master   0   0   0   0   0   0    0   0   0   0   0
+  Miss     1   0   0   0   0   0    0   0   0   0   0
+  Mr       1   3   3   1   1   1    1   2   1   0   1
+  Mrs      2   2   0   0   0   0    0   0   0   1   0
+  Ms       0   0   0   0   0   0    0   0   0   0   0
+  Rev      0   0   0   0   0   0    0   0   0   0   0
+  Sir      0   0   0   0   0   1    0   0   0   0   0
