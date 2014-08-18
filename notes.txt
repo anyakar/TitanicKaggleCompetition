@@ -1,14 +1,20 @@
-
+0.79426 conditionalforest_m8.csv - FamilyID3, SingleParent ##should match _m5.csv?
+0.79904 conditionalforest_m7.csv - FamilyID3, ChildParent
+0.79904 conditionalforest_m7.csv - FamilyID3, ChildParent
+0.80383 conditionalforest_m6.csv - FamilyID1, SingleParent
+0.80861 conditionalforest_m5.csv - FamilyID3, SingleParent
 0.79426 conditionalforest_m4.csv
 0.77033 randomforest_m3.csv
 0.77033 conditionalforest_m2.csv
-0.77512(?) randomforest_m1.csv
-0.80861 conditionalforest.csv
+0.77033 randomforest_m1.csv
+0.80861 conditionalforest.csv - re-run, as conditionalforest_m2b.csv, still getting 0.80861
+
 
 0.81340 Trevor Conditional Inference Tree
 0.77512 Trevor Random Forest 
 0.74163 Trevor Overfitted Decision Tree
 0.79426 Trevor Decision Tree
+
 
 
 > table(train$Sex)
@@ -479,3 +485,40 @@ logical     876      15       0
   Single         790   0   0   0   0   0   0   0   0
   Three            0   0 159   0   0   0   0   0   0
   Two              0 235   0   0   0   0   0   0   0
+  
+  > table(combi$Title, combi$singleParent)
+# 0.80861 conditionalforest_m5.csv - FamilyID3, SingleParent  
+        
+           0 infant onlyChild singleParent
+  Col      4      0         0            0
+  Dr       7      0         0            1
+  Lady     4      0         0            0
+  Master  27      7        27            0
+  Miss   221      5        36            0
+  Mr     713      0         0           44
+  Mrs    151      0         0           47
+  Ms       2      0         0            0
+  Rev      6      0         0            2
+  Sir      4      0         0            1
+  
+  > table(combi$ChildParent, combi$Sex)
+# 0.79904 conditionalforest_m7.csv - FamilyID3, ChildParent
+                    
+                     female male
+  Infant                  5    7
+  NotRemarkable         393  766
+  OnlyChildUnder12        6   12
+  OnlyChildUnder16        4    0
+  OnlyChildUnder6        11   10
+  SingleParentFemale     47    0
+  SingleParentMale        0   48
+  
+  > table(combi$ChildParent, combi$Sex)
+0.79904 conditionalforest_m7.csv - FamilyID3, ChildParent
+                  
+                   female male
+  Infant                5    7
+  NotRemarkable       444  766
+  OnlyChildUnder12      6   12
+  OnlyChildUnder6      11   10
+  SingleParentMale      0   48

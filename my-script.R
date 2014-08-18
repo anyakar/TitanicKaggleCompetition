@@ -116,6 +116,15 @@ combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master'))] 
 combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'infant'
 combi$singleParent <- factor(combi$singleParent)
 
+combi$ChildParent <- 'NotRemarkable'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleParentMale'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Lady'))] <- 'SingleParentFemale'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 12)] <- 'OnlyChildUnder12'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age < 6)] <- 'OnlyChildUnder6'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+combi$ChildParent <- factor(combi$ChildParent)
+
+
 fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + singleParent,
                data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
 Prediction <- predict(fit, test, OOB=TRUE, type = "response")
