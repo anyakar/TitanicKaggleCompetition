@@ -110,16 +110,20 @@ write.csv(submit, file = "conditionalforest_m4.csv", row.names = FALSE)
 #### MODEL 5 - 
 # Families with infants?
 # Male parent of the only child?
-combi$singleParent <- 0
-combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'singleParent'
-combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master'))] <- 'onlyChild'
-combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'infant'
-combi$singleParent <- factor(combi$singleParent)
+combi$SingleParent <- as.character(combi$SingleParent)
+combi$SingleParent <- 'NotRemarkable'
+#combi$SingleParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'SingleParent'
+combi$SingleParent[(combi$Parch == 1) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleFather'
+combi$SingleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master'))] <- 'OnlyChild'
+combi$SingleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+combi$SingleParent <- factor(combi$SingleParent)
 
+combi$ChildParent <- as.character(combi$ChildParent)
 combi$ChildParent <- 'NotRemarkable'
 combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleParentMale'
-combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Lady'))] <- 'SingleParentFemale'
-combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 12)] <- 'OnlyChildUnder12'
+#combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Lady'))] <- 'SingleParentFemale'
+#combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 16)] <- 'OnlyChildUnder16'
+#combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 12)] <- 'OnlyChildUnder12'
 combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age < 6)] <- 'OnlyChildUnder6'
 combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
 combi$ChildParent <- factor(combi$ChildParent)
@@ -137,6 +141,35 @@ Prediction <- predict(fit, test, OOB=TRUE, type = "response")
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
 write.csv(submit, file = "conditionalforest_m6.csv", row.names = FALSE)
 
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m7.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m8.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + SingleParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m9.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m10.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID1 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m11.csv", row.names = FALSE)
 
 ####
 write.csv(combi, file = "combi.csv", row.names = FALSE)
