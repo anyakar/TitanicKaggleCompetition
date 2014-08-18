@@ -1,3 +1,16 @@
+
+0.79426 conditionalforest_m4.csv
+0.77033 randomforest_m3.csv
+0.77033 conditionalforest_m2.csv
+0.77512(?) randomforest_m1.csv
+0.80861 conditionalforest.csv
+
+0.81340 Trevor Conditional Inference Tree
+0.77512 Trevor Random Forest 
+0.74163 Trevor Overfitted Decision Tree
+0.79426 Trevor Decision Tree
+
+
 > table(train$Sex)
 female   male 
    314    577 
@@ -428,3 +441,41 @@ logical     876      15       0
   Ms       0   0   0   0   0   0    0   0   0   0   0
   Rev      0   0   0   0   0   0    0   0   0   0   0
   Sir      0   0   0   0   0   1    0   0   0   0   0
+  
+  
+  > table(combi$FamilyID3, combi$FamilySize)
+                
+                   1   2   3   4   5   6   7   8  11
+  11Sage           0   0   0   0   0   0   0   0  11
+  4Allison         0   0   0   4   0   0   0   0   0
+  4Backstrom       0   0   0   1   0   0   0   0   0
+  4Baclini         0   0   0   4   0   0   0   0   0
+  4Becker          0   0   0   4   0   0   0   0   0
+  4Carter          0   0   0   4   0   0   0   0   0
+  4Davidson        0   0   0   1   0   0   0   0   0
+  4Dean            0   0   0   4   0   0   0   0   0
+  4Herman          0   0   0   4   0   0   0   0   0
+  4Hocking         0   0   0   2   0   0   0   0   0
+  4Jacobsohn       0   0   0   1   0   0   0   0   0
+  4Johnston        0   0   0   4   0   0   0   0   0
+  4Laroche         0   0   0   4   0   0   0   0   0
+  4Renouf          0   0   0   1   0   0   0   0   0
+  4Vander Planke   0   0   0   1   0   0   0   0   0
+  4West            0   0   0   4   0   0   0   0   0
+  5Ford            0   0   0   0   5   0   0   0   0
+  5Hocking         0   0   0   0   1   0   0   0   0
+  5Kink-Heilmann   0   0   0   0   1   0   0   0   0
+  5Lefebre         0   0   0   0   5   0   0   0   0
+  5Palsson         0   0   0   0   5   0   0   0   0
+  5Ryerson         0   0   0   0   5   0   0   0   0
+  6Fortune         0   0   0   0   0   6   0   0   0
+  6Panula          0   0   0   0   0   6   0   0   0
+  6Rice            0   0   0   0   0   6   0   0   0
+  6Richards        0   0   0   0   0   1   0   0   0
+  6Skoog           0   0   0   0   0   6   0   0   0
+  7Andersson       0   0   0   0   0   0   9   0   0
+  7Asplund         0   0   0   0   0   0   7   0   0
+  8Goodwin         0   0   0   0   0   0   0   8   0
+  Single         790   0   0   0   0   0   0   0   0
+  Three            0   0 159   0   0   0   0   0   0
+  Two              0 235   0   0   0   0   0   0   0

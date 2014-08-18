@@ -27,12 +27,31 @@ table(combi$Title)
 combi$FamilySize <- combi$SibSp + combi$Parch + 1 # Family size 
 combi$Surname <- sapply(combi$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][1]}) #Family name
 combi$FamilyID <- paste(as.character(combi$FamilySize), combi$Surname, sep="") #Paste together for family ID
-combi$FamilyID[combi$FamilySize <= 2] <- 'Small' #Not concerned with small families
-# more clean up
+combi$FamilyID1 <- combi$FamilyID
+combi$FamilyID1[combi$FamilySize <= 2] <- 'Small' #Not concerned with small families
+#Adding FamilyID 'Small' - model #1
 famIDs <- data.frame(table(combi$FamilyID))
-famIDs <- famIDs[famIDs$Freq <= 2,] #limit famID to small families (<=2 people)
-combi$FamilyID[combi$FamilyID %in% famIDs$Var1] <- 'Small' #family names get overwritten with small
-combi$FamilyID <- factor(combi$FamilyID)
+famIDs <- famIDs[famIDs$Freq <= 2,] #limit famID to small families (<=2 people) - this is Freq - 
+combi$FamilyID1[combi$FamilyID1 %in% famIDs$Var1] <- 'Small' #family names get overwritten with small
+combi$FamilyID1 <- factor(combi$FamilyID1)
+str(combi)
+#Preping FamilyID for Random Forests (<32 factor levels)
+combi$FamilyID2 <- combi$FamilyID
+combi$FamilyID2 <- as.character(combi$FamilyID2)
+combi$FamilyID2[combi$FamilySize <= 3] <- 'Small'
+combi$FamilyID2 <- factor(combi$FamilyID2)
+# FamilyID - single person + three persons - to comp w/random forests
+table(combi$FamilySize)
+table(combi$FamilyID)
+combi$FamilyID3 <- as.character(combi$FamilyID)
+combi$FamilyID3[combi$FamilySize == 1] <- 'Single'
+combi$FamilyID3[combi$FamilySize == 2] <- 'Two'
+combi$FamilyID3[combi$FamilySize == 3] <- 'Three'
+combi$FamilyID3 <- factor(combi$FamilyID3)
+table(combi$FamilyID3, combi$FamilySize)
+table(combi$FamilyID3, combi$FamilySize, combi$Parch)
+aggregate(FamilyID3 ~ SibSp + Parch, data=combi, FUN=function(x) {round(sum(x)/length(x), 3)})
+
 
 ## Imputing missing values
 summary(combi) #Age, Embarked, Fare
@@ -64,24 +83,14 @@ write.csv(submit, file = "randomforest.csv", row.names = FALSE)
 
 #### MODEL 2
 # Forest of conditional inference trees - can handle large factors
-fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID,
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID1,
                data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
 Prediction <- predict(fit, test, OOB=TRUE, type = "response")
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
-write.csv(submit, file = "conditionalforest_m2.csv", row.names = FALSE)
+write.csv(submit, file = "conditionalforest_m2b.csv", row.names = FALSE)
 
 
 #### MODEL 3 - Adding "Single" as a category for FamilyID
-# FamilyID - single person + three persons - to comp w/random forests
-table(combi$FamilySize)
-table(combi$FamilyID)
-combi$FamilyID3 <- as.character(combi$FamilyID)
-combi$FamilyID3[combi$FamilySize == 1] <- 'Single'
-combi$FamilyID3[combi$FamilySize == 2] <- 'Two'
-combi$FamilyID3[combi$FamilySize == 3] <- 'Three'
-combi$FamilyID3 <- factor(combi$FamilyID3)
-table(combi$FamilyID3)
-
 ## Compare to Random Forest
 fit <- randomForest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize +
                         FamilyID3, data=train, importance=TRUE, ntree=2000)
@@ -90,4 +99,35 @@ Prediction <- predict(fit, test)
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
 write.csv(submit, file = "randomforest_m3.csv", row.names = FALSE)
 
+#### MODEL 4 - Using new FamilyID3 with Conditional Forests
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m4.csv", row.names = FALSE)
 
+
+#### MODEL 5 - 
+# Families with infants?
+# Male parent of the only child?
+combi$singleParent <- 0
+combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'singleParent'
+combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master'))] <- 'onlyChild'
+combi$singleParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'infant'
+combi$singleParent <- factor(combi$singleParent)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + singleParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m5.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID1 + singleParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m6.csv", row.names = FALSE)
+
+
+####
+write.csv(combi, file = "combi.csv", row.names = FALSE)
