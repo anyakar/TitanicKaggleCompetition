@@ -35,6 +35,30 @@ famIDs <- famIDs[famIDs$Freq <= 2,] #limit famID to small families (<=2 people) 
 combi$FamilyID1[combi$FamilyID1 %in% famIDs$Var1] <- 'Small' #family names get overwritten with small
 combi$FamilyID1 <- factor(combi$FamilyID1)
 str(combi)
+# AK - families where Freq & FamilyID don't match:
+FamIDs <- data.frame(table(combi$FamilyID))
+FamIndex <- (sub("[A-Z][a-z]+", "\\1", famIDs$Var1) != as.character(famIDs$Freq))
+FamilyOdd <- famIDs[FamIndex,] #193 out of 928 FamilyIDs are ODD
+# Cleaning up
+OddRows <- combi[which(combi$FamilyID %in% FamilyOdd$Var1[1]),]
+for (i in 2:nrow(FamilyOdd)) {
+    OddRows <- rbind(OddRows, combi[which(combi$FamilyID %in% FamilyOdd$Var1[i]),])
+    }
+#SEE manual clean up doc
+combi$FamilyIDCleanUp <- as.character(combi$FamilyID)
+combi$FamilyIDCleanUp2 <- as.character(combi$FamilyIDCleanUp2)
+combi$FamilySizeCleanUp <- combi$FamilySize
+#run the cleaning stuff
+combi$FamilyIDCleanUp <- as.factor(combi$FamilyIDCleanUp)
+combi$FamilySizeCleanUp <- as.integer(combi$FamilySizeCleanUp)
+combi$FamilyIDCleanUp2 <- combi$FamilyIDCleanUp
+combi$FamilyIDCleanUp2[combi$FamilySizeCleanUp <= 2] <- 'Small'
+combi$FamilySizeCleanUp <- as.integer(combi$FamilySizeCleanUp)
+combi$FamilyIDCleanUp2 <- as.factor(combi$FamilyIDCleanUp2)
+
+combi$FamilyID <- factor(combi$FamilyID)
+#familytable <- aggregate(FamilyID ~ FamilyID + Name + FamilySize + PassengerId, data=combi, FUN=length) # how many are in a given Family ID
+#familytable <- aggregate(FamilyID ~ FamilySize, data=combi, FUN=length) # how many are in a given Family ID
 #Preping FamilyID for Random Forests (<32 factor levels)
 combi$FamilyID2 <- combi$FamilyID
 combi$FamilyID2 <- as.character(combi$FamilyID2)
@@ -120,14 +144,33 @@ combi$SingleParent <- factor(combi$SingleParent)
 
 combi$ChildParent <- as.character(combi$ChildParent)
 combi$ChildParent <- 'NotRemarkable'
-combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleParentMale'
+combi$ChildParent[(combi$Parch == 1) & (combi$SibSp == 0) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleParentMale'
 #combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Lady'))] <- 'SingleParentFemale'
 #combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 16)] <- 'OnlyChildUnder16'
 #combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 12)] <- 'OnlyChildUnder12'
 combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age < 6)] <- 'OnlyChildUnder6'
-combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
-combi$ChildParent <- factor(combi$ChildParent)
+#combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+combi$ChildParent[(combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+combi$ChildParent <- as.factor(combi$ChildParent)
 
+#more options - parent of infant
+infants <- subset(combi, combi$Age <= 1) #infants
+infants <- subset(combi, ((combi$Age <= 1) & (combi$Parch == 1))) #infants with single parent
+parentIDs <- as.character(infants$FamilyID) # infants with single parent
+smallchildren <- subset(combi, ((combi$Age > 1) & (combi$Age <= 3) & (combi$Parch == 1))) #with single parent
+parentIDs <- as.character(c(infants$FamilyID, smallchildren$FamilyID))
+parentIDsFreq <- data.frame(table(parentIDs))
+parentIDs1 <- parentIDs[parentIDsFreq$Freq ==1]
+parentIDs2 <- parentIDs[parentIDsFreq$Freq ==2]
+combi$ChildParent <- as.character(combi$ChildParent)
+combi$ChildParent[(combi$FamilyID %in% parentIDs1) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'SingleParentOfSmChild'
+combi$ChildParent[(combi$FamilyID %in% parentIDs2) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'TwoParentsOfSmChild'
+#combi$ChildParent[(combi$FamilyID %in% parentIDs) & (combi$Title %in% c('Mrs', 'Mr','Col', 'Dr', 'Lady', 'Rev','Sir'))] <- 'ParentOfInfant'
+combi$ChildParent[(combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+#combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Mrs', 'Lady'))] <- 'SingleParentFemale'
+
+combi$ChildParent <- factor(combi$ChildParent)
+combi$FamilyIDCleanUp <- factor(combi$FamilyIDCleanUp)
 
 fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID3 + singleParent,
                data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
@@ -170,6 +213,37 @@ fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare +
 Prediction <- predict(fit, test, OOB=TRUE, type = "response")
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
 write.csv(submit, file = "conditionalforest_m11.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID1 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m12.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID1 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m13.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySizeCleanUp + FamilyIDCleanUp2,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m14.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySizeCleanUp + FamilyIDCleanUp2 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m15.csv", row.names = FALSE)
+
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + Fare + Title + 
+                   FamilySizeCleanUp + FamilyIDCleanUp2 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "conditionalforest_m16.csv", row.names = FALSE)
 
 ####
 write.csv(combi, file = "combi.csv", row.names = FALSE)

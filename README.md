@@ -1,0 +1,213 @@
+Titanic Kaggle Competition
+========================================================
+
+The task is to predict whether a given passenger survived the sinking of the Titanic based on available data. The data includes passenger's age, gender, name, number of family members on board (parent or chile and spouse or sibling), the fare that was paid, class of travel, ticket number and cabin (for some), and the port at which they boarded the Titanic.
+
+The data is split into two sets -- train set (891 observations) and test set (418 observations). The solutions are evaluated by comparing the percentage of correct answers against the test subset.
+
+I decided to approach the problem by building a decision tree model.
+
+
+```r
+require(randomForest)
+require(party)
+require(rpart)
+set.seed(123) 
+```
+
+Loading train and test data and combining them into one dataset for subsequent clean-up and manipulation.
+
+
+```r
+train <- read.csv(file="train.csv")
+test <- read.csv(file="test.csv")
+test$Survived <- NA
+combi <- rbind(train, test)
+```
+
+Additional engineered attributes were introduced:
+- A passenger Title (such as "Miss", "Mrs", "Master", "Mr", "Lady", "Sir", "Dr", etc.) was extracted from the Name attribute.
+- FamilyID to link family members together -- the passenger name was extracted Name attribute, the total number of family members was calculated from Parch and SibSp attributes (Parch + SibSp + 1). The idea was that known fate of other family members would be a good predictor of survival likelihood, especially for large families that would have more troubles staying together. There was a large number of small families, so families with small number of members were grouped into Single and TwoMembers categories.
+
+This portion of the script is based on <a href="trevorstephens.com/post/72916401642/titanic-getting-started-with-r">Trevor Stephen's tutorial</a>. One change I made was to merge Mme and Mlle (French titles) with their English counterparts. I also experimented with splitting groups based on FamilyID into Single, Two persons, Three persons groups, but that did not seem to improve the score. 
+
+Creating Title attribute:
+
+```r
+combi$Name <- as.character(combi$Name)
+combi$Title <- sapply(combi$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][2]})
+combi$Title <- sub(' ', '', combi$Title)
+combi$Title[combi$Title %in% c('Miss', 'Mlle')] <- 'Miss'  # Normalizing French titles - Madmoiselle
+combi$Title[combi$Title %in% c('Mme', 'Mrs')] <- 'Mrs'  # Normalizing French titles - Madame
+combi$Title[combi$Title %in% c('Capt', 'Don', 'Major', 'Sir')] <- 'Sir' # Combining gentlemen
+combi$Title[combi$Title %in% c('Dona', 'Lady', 'the Countess', 'Jonkheer')] <- 'Lady' # Combining ladies
+combi$Title <- factor(combi$Title)
+table(combi$Title)
+```
+
+Creating new FamilyID and FamilySize attributes:
+
+```r
+combi$FamilySize <- combi$SibSp + combi$Parch + 1  # Calculating Family size 
+combi$Surname <- sapply(combi$Name, FUN=function(x) 
+    {strsplit(x, split='[,.]')[[1]][1]}) # Extracting family name as surname
+combi$FamilyID <- paste(as.character
+                        (combi$FamilySize), combi$Surname, sep="")
+combi$FamilyID1 <- combi$FamilyID # Creating a column copy 
+combi$FamilyID1[combi$FamilySize <= 2] <- 'Small' # Combining all families with less than 2 members into one group: 'Small'
+famIDs <- data.frame(table(combi$FamilyID)) # Checking frequency for outliers
+famIDs <- famIDs[famIDs$Freq <= 2,] 
+combi$FamilyID1[combi$FamilyID1 %in% famIDs$Var1] <- 'Small' # Modifying outliers
+combi$FamilyID1 <- factor(combi$FamilyID1)
+combi$FamilyID2 <- as.character(combi$FamilyID1) # Random forest can only handle up to 53 factors
+combi$FamilyID2[combi$FamilySize <= 3] <- 'Small'
+combi$FamilyID2 <- factor(combi$FamilyID2)
+```
+
+Imputing missing values:
+
+
+```r
+## Imputing missing values
+summary(combi) #Age, Embarked, Fare have missing values
+Agefit <- rpart(Age ~ Pclass + Sex + SibSp + Parch + Fare + Embarked + Title + FamilySize,
+                data=combi[!is.na(combi$Age),], method="anova")
+combi$Age[is.na(combi$Age)] <- predict(Agefit, combi[is.na(combi$Age),])
+which(combi$Embarked == '') 
+combi$Embarked[c(62,830)] = "S" # Southhampton
+which(is.na(combi$Fare))
+combi$Fare[1044] <- median(combi$Fare[which(combi$Pclass==3)], na.rm=TRUE)
+```
+
+After the new attributes are computed, the sets are split into train and set again.
+
+
+```r
+train <- combi[1:891,]
+test <- combi[892:1309,]
+```
+
+Using new FamilyID1 and FamilySize attributes, the random forest and conditional inference models were run (also, based on Trever's tutorial).
+
+The first random tree attributes calculated Survival likelihood for train data based on gender, age, whether siblings/spouse and parents/children were on board, fare paid, the port where the passenger embarked:
+
+   Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID
+
+The resulting model was then used to predict the outcome for the test data.
+
+
+```r
+#Random forest tree:
+fit <- randomForest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + 
+                        Embarked + Title + FamilySize +
+                        FamilyID2, data=train, importance=TRUE, ntree=2000)
+prediction <- predict(fit, test)
+submit <- data.frame(PassengerId = test$PassengerId, Survived = prediction)
+write.csv(submit, file = "firstforest_m1.csv", row.names = FALSE)
+```
+
+The result on the first random tree was a **0.77033** score, followed by **0.79426** for a conditional inference tree. 
+I suspected that still the data did not reflect the family relations very well. The hypothesis was that under "women and children" first rule, the parents of little children who survived, especially single parents, were likely to have survived as well.
+I have experimented with adding ChildParent attribute to better distinguish small children and their parents: infants, children under 6 years of age, and single parents of small children (male and female). The rest of the observations were marked as unremarkable. 
+
+
+```r
+combi$ChildParent <- 'NotRemarkable'
+combi$ChildParent[(combi$Parch == 1) & (combi$SibSp == 0) & (combi$Title %in% c('Mr','Col', 'Dr', 'Rev','Sir'))] <- 'SingleParentMale'
+combi$ChildParent[(combi$Parch == 1) & (combi$Title %in% c('Miss', 'Master')) & (combi$Age < 6)] <- 'OnlyChildUnder6'
+combi$ChildParent[(combi$Title %in% c('Miss', 'Master')) & (combi$Age <= 1)] <- 'Infant'
+combi$ChildParent <- as.factor(combi$ChildParent)
+```
+
+
+
+
+Additional experimentation showed best results where the single parent category was simply single fathers (or fathers traveling solo). I then re-run the conditional inference tree model.
+
+
+```r
+#Conditional inference tree:
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + Fare + Title + 
+                   FamilySize + FamilyID1 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = prediction)
+write.csv(submit, file = "condinfforest_m2.csv", row.names = FALSE)
+```
+
+That raised my score to **0.81340**.
+
+But family relations were still convoluted with the use of two attributes Parch and Sibsp. Some groups were multi-generational and included daughters under married names, aunt and uncles, nieces and nephews, etc. I decided that additional clean up was needed.
+
+I undertook FamilyID and FamilySize clean up, focusing on larger families.
+
+First, I extracted observations where the number of family members with a given ID did not match the family size for the whole group. That produced a subset of 328 observations.
+
+
+```r
+FamIDs <- data.frame(table(combi$FamilyID))
+FamIndex <- (sub("[A-Z][a-z]+", "\\1", famIDs$Var1) != as.character(famIDs$Freq))
+FamilyOdd <- famIDs[FamIndex,] #193 out of 928 FamilyIDs are ODD
+OddRows <- combi[which(combi$FamilyID %in% FamilyOdd$Var1[1]),]
+for (i in 2:nrow(FamilyOdd)) {
+    OddRows <- rbind(OddRows, combi[which(combi$FamilyID %in% FamilyOdd$Var1[i]),])
+}
+```
+
+I then examined them focusing on larger families -- I checked for unmarried names for women (often listed in parenthesis) using regular expression, and checked groups of people by their ticket numbers -- often families members traveling together would have the same ticket number. 
+
+Here are examples of the code I used to link family members:
+
+
+```r
+# Searching for names 
+grep(('*Persson*'), combi$Name, value = TRUE)
+combi[which(Surname=='Persson'),]
+```
+
+```
+## Error: object 'Surname' not found
+```
+
+```r
+# Looking for groups of passengers with the same ticket numbers
+combi[which(combi$Ticket=='C.A. 33112'),]
+which(combi$Ticket=='C.A. 33112')
+```
+
+I assumed that families were traveling with the same class accommodations and their ticket fares were similar if not identical. If passengers had the same last names but travelled in different class, I assumed they were not related.
+
+Whenever I could make a link, I updated FamilyID and FamilySize attributes manually to reflect my observation.
+
+I then set up the new columns and ran the resulting script.
+
+
+```r
+#Creating columns to receive cleaned up data 
+combi$FamilyIDCleanUp <- as.character(combi$FamilyID)
+combi$FamilySizeCleanUp <- combi$FamilySize
+# [Run the cleaning script]
+combi$FamilyIDCleanUp2 <- combi$FamilyIDCleanUp
+combi$FamilyIDCleanUp2[combi$FamilySizeCleanUp <= 2] <- 'Small'
+combi$FamilyIDCleanUp <- as.factor(combi$FamilyIDCleanUp)
+combi$FamilyIDCleanUp2 <- as.factor(combi$FamilyIDCleanUp2)
+combi$FamilySizeCleanUp <- as.integer(combi$FamilySizeCleanUp)
+```
+
+As a result the number of "large" families (3 or more members) increased from 273 to 319. These were the families that retained their individual family IDs and were not lumped together into a "small" families category.
+
+I also re-executed the ChildParent part of the script on the cleaned-up dataset with the same categories described above. Then I re-run the conditional infererence tree on the cleaned up dataset.
+
+
+
+
+```r
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + Fare + Title + 
+                   FamilySizeCleanUp + FamilyIDCleanUp2 + ChildParent,
+               data = train, controls=cforest_unbiased(ntree=2000, mtry=3))
+Prediction <- predict(fit, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "condinfforest_m3.csv", row.names = FALSE)
+```
+
+The score improved to **0.82297**, which is an improvement, just not as much as I hoped it would be for the amount of work. 
