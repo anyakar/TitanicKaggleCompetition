@@ -159,9 +159,6 @@ Prediction <- predict(fit, test, OOB=TRUE, type = "response")
 
 
 #_________________________
-# Some rules
-train$Child[train$Age < 13] <- 1 #children 12 and younger had a better chance of survival
-test$Survived[test$Fare == 0] <- 0  #Those who paid a fare of 0, did not survive (males)
 
 # Submit data to Kaggle:
 submit <- data.frame(PassengerId = test$PassengerId, Survived = test$Survived)
