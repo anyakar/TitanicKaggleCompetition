@@ -5,7 +5,9 @@ The task is to predict whether a given passenger survived the sinking of the Tit
 
 The data is split into two sets -- train set (891 observations) and test set (418 observations). The solutions are evaluated by comparing the percentage of correct answers against the test subset.
 
-I decided to approach the problem by building a decision tree model.
+The analysis is conducted in R using R Studio and documented using R markdown with knitr.
+
+I decided to approach the problem by building a decision tree model. I used <a href="http://trevorstephens.com/post/72916401642/titanic-getting-started-with-r">R tutorial</a> by Trevor Stephens to get started on the problem. 
 
 ```{r intro, message=FALSE, results='hide', warning=FALSE}
 require(randomForest)
@@ -27,9 +29,10 @@ Additional engineered attributes were introduced:
 - A passenger Title (such as "Miss", "Mrs", "Master", "Mr", "Lady", "Sir", "Dr", etc.) was extracted from the Name attribute.
 - FamilyID to link family members together -- the passenger name was extracted Name attribute, the total number of family members was calculated from Parch and SibSp attributes (Parch + SibSp + 1). The idea was that known fate of other family members would be a good predictor of survival likelihood, especially for large families that would have more troubles staying together. There was a large number of small families, so families with small number of members were grouped into Single and TwoMembers categories.
 
-This portion of the script is based on <a href="trevorstephens.com/post/72916401642/titanic-getting-started-with-r">Trevor Stephen's tutorial</a>. One change I made was to merge Mme and Mlle (French titles) with their English counterparts. I also experimented with splitting groups based on FamilyID into Single, Two persons, Three persons groups, but that did not seem to improve the score. 
+TOne change I made against Trevor's script was to merge Mme and Mlle (French titles) with their English counterparts. I also experimented with splitting groups based on FamilyID into Single, Two persons, Three persons groups, but that did not seem to improve the score. 
 
-Creating Title attribute:
+**Creating Title attribute:**
+
 ```{r newvars1, results='hide'}
 combi$Name <- as.character(combi$Name)
 combi$Title <- sapply(combi$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][2]})
@@ -42,7 +45,8 @@ combi$Title <- factor(combi$Title)
 table(combi$Title)
 ```
 
-Creating new FamilyID and FamilySize attributes:
+**Creating new FamilyID and FamilySize attributes:**
+
 ```{r newvars2, results='hide'}
 combi$FamilySize <- combi$SibSp + combi$Parch + 1  # Calculating Family size 
 combi$Surname <- sapply(combi$Name, FUN=function(x) 
@@ -60,7 +64,7 @@ combi$FamilyID2[combi$FamilySize <= 3] <- 'Small'
 combi$FamilyID2 <- factor(combi$FamilyID2)
 ```
 
-Imputing missing values:
+**Imputing missing values** I made a slight modification against Trevor's script to impute the missing fare data based on the median fare for the class of travel as opposed to the overall median fare of the complete set:
 
 ```{r missingvalues, results='hide'}
 ## Imputing missing values
@@ -85,7 +89,7 @@ Using new FamilyID1 and FamilySize attributes, the random forest and conditional
 
 The first random tree attributes calculated Survival likelihood for train data based on gender, age, whether siblings/spouse and parents/children were on board, fare paid, the port where the passenger embarked:
 
-   Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID
+  **Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID**
 
 The resulting model was then used to predict the outcome for the test data.
 
@@ -99,8 +103,11 @@ submit <- data.frame(PassengerId = test$PassengerId, Survived = prediction)
 write.csv(submit, file = "firstforest_m1.csv", row.names = FALSE)
 ```
 
-The result on the first random tree was a **0.77033** score, followed by **0.79426** for a conditional inference tree. 
-I suspected that still the data did not reflect the family relations very well. The hypothesis was that under "women and children" first rule, the parents of little children who survived, especially single parents, were likely to have survived as well.
+The result on the first random tree was a **0.77033** score, followed by **0.79426** for a conditional inference tree. Interestingly, these results were lower than those reported by Trevor Stephens. 
+
+I then set out to try and improve the model.
+
+I suspected that the data did not reflect the family relations very well. The hypothesis was that under "women and children" first rule, the parents of little children who survived, especially single parents, were likely to have survived as well. 
 I have experimented with adding ChildParent attribute to better distinguish small children and their parents: infants, children under 6 years of age, and single parents of small children (male and female). The rest of the observations were marked as unremarkable. 
 
 ```{r childparent}
@@ -164,6 +171,8 @@ I assumed that families were traveling with the same class accommodations and th
 
 Whenever I could make a link, I updated FamilyID and FamilySize attributes manually to reflect my observation.
 
+The results of clean up are combined in <a href="https://github.com/anyakar/TitanicKaggleCompetition/blob/master/FamilyIDSize-ClieanUp.R">this R script</a>.
+
 I then set up the new columns and ran the resulting script.
 
 ```{r famidcleanup2}
@@ -180,7 +189,7 @@ combi$FamilySizeCleanUp <- as.integer(combi$FamilySizeCleanUp)
 
 As a result the number of "large" families (3 or more members) increased from 273 to 319. These were the families that retained their individual family IDs and were not lumped together into a "small" families category.
 
-I also re-executed the ChildParent part of the script on the cleaned-up dataset with the same categories described above. Then I re-run the conditional infererence tree on the cleaned up dataset.
+I also re-executed the ChildParent part of the script on the cleaned-up dataset with the same categories described above. Then I re-ran the conditional infererence tree on the cleaned up dataset.
 
 ```{r splittingsets3, echo=FALSE}
 train <- combi[1:891,]
@@ -196,4 +205,4 @@ submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
 write.csv(submit, file = "condinfforest_m3.csv", row.names = FALSE)
 ```
 
-The score improved to **0.82297**, which is an improvement, just not as much as I hoped it would be for the amount of work. 
+The score improved to **0.82297**, which was an improvement, just not as much as one could have hoped.
