@@ -1,4 +1,4 @@
-# FamilyID clean up
+# Results of the manual FamilyID clean up using lookup by ticket number and passenger names other than the surname listed (common for married woman traveling with their side of the family.)
 # Ali brothers
 combi$FamilyIDCleanUp[c(211, 785)] <- '2Ali'
 combi$FamilySizeCleanUp[c(211, 785)] <- 2

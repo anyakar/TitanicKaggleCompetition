@@ -1,4 +1,8 @@
-0.81340 conditionalforest_m11.csv - FamilyID1 + ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant") 
+** 0.82297 conditionalforest_m15.csv - FamilyIDCleanUp + FamilySizeCleanUp + ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant"[Parch = 1])
+0.81340 conditionalforest_m14.csv - FamilyIDCleanUp + FamilySizeCleanUp
+0.79426 conditionalforest_m13.csv - FamilyID1 + ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant"[Parch = 1], "SingleParentOfInfant", "TwoParentsOfInfant") 
+0.80383 conditionalforest_m12.csv - FamilyID1 + ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant"[Parch is any]) 
+0.81340 conditionalforest_m11.csv - FamilyID1 + ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant"[Parch =1, ...]) 
 0.79904 conditionalforest_m10.csv - FamilyID3, ChildParent ("NotRemarkable", "OnlyChildUnder6", "SingleParentMale", "Infant") 
 0.79426 conditionalforest_m8.csv - FamilyID3, SingleParent ##should match _m5.csv?
 0.79904 conditionalforest_m7.csv - FamilyID3, ChildParent
@@ -540,3 +544,300 @@ logical     876      15       0
   NotRemarkable 502 303
   OnlyChild      17  34
   SingleFather   30   5
+
+> table(combi$ChildParent)
+
+              Infant        NotRemarkable      OnlyChildUnder6     SingleParentMale SingleParentOfInfant   TwoParentsOfInfant 
+                  22                 1212                   21                   45                    4                    5 
+> table(combi$ChildParent, combi$Survived)
+                      
+                         0   1
+  Infant                 2  12
+  NotRemarkable        511 309
+  OnlyChildUnder6        6  12
+  SingleParentMale      27   5
+  SingleParentOfInfant   3   1
+  TwoParentsOfInfant     0   3
+  
+> table(combi$ChildParent, combi$Survived, combi$Sex)
+, ,  = female
+                         0   1
+  Infant                 0   4
+  NotRemarkable         79 218
+  OnlyChildUnder6        2   7
+  SingleParentMale       0   0
+  SingleParentOfInfant   0   1
+  TwoParentsOfInfant     0   3
+, ,  = male
+                         0   1
+  Infant                 2   8
+  NotRemarkable        432  91
+  OnlyChildUnder6        4   5
+  SingleParentMale      27   5
+  SingleParentOfInfant   3   0
+  TwoParentsOfInfant     0   0
+
+> table(combi$ChildParent, combi$Sex)
+                      
+                       female male
+  Infant                    9   13
+  NotRemarkable           440  772
+  OnlyChildUnder6          11   10
+  SingleParentMale          0   45
+  SingleParentOfInfant      1    3
+  TwoParentsOfInfant        5    0
+  
+> parentIDs <- as.character(c(infants$FamilyID, smallchildren$FamilyID))
+> table(parentIDs)
+parentIDs
+       2Aks   2Hirvonen      2Strom     2Thomas     3Coutts 3Hamalainen    3Johnson     3Klasen   3Navratil    3Peacock      3Quick 
+          1           1           1           1           1           1           1           1           2           2           1 
+  3Richards    3Rosblom  3Sandstrom      3Wells    4Baclini     4Becker    5Palsson     6Panula       6Rice 
+          2           1           1           1           2           1           2           2           1 
+          
+> table(combi$ChildParent, combi$Sex)
+                       
+                        female male
+  Infant                     9   13
+  NotRemarkable            431  770
+  OnlyChildUnder6           11   10
+  SingleParentMale           0   44
+  SingleParentOfSmChild     10    5
+  TwoParentsOfSmChild        5    1
+
+> parentIDs2
+[1] "3Sandstrom" "3Klasen"    "2Aks"       "2Strom"     "3Coutts"    "5Palsson"  
+> which(combi$FamilyID == parentIDs2[1])
+[1]   11  395 1009
+> which(combi$FamilyID == parentIDs2[2])
+[1]  176 1045 1155
+> which(combi$FamilyID == parentIDs2[3])
+[1]  856 1199
+> which(combi$FamilyID == parentIDs2[4])
+[1] 206
+> which(combi$FamilyID == parentIDs2[5])
+[1] 349 490 941
+> which(combi$FamilyID == parentIDs2[6])
+[1]    8   25  375  568 1281
+
+
+# Family ID clean up
+# Ali brothers
+combi$FamilyIDCleanUp[211, 785] <- '2Ali'
+combi$FamilySize[211, 785] <- 2
+# Abelseth
+combi$FamilyIDCleanUp[949, 1237] <- '2Abelseth'
+combi$FamilySize[949, 1237] <- 2
+# Andersson
+combi$FamilyIDCleanUp[14, 120, 542, 543, 611, 814, 851] <- '7Andersson'
+combi$FamilySize[14, 120, 542, 543, 611, 814, 851] <- 7
+# Andersson
+combi$FamilyIDCleanUp[69] <- '1Andersson 1'
+combi$FamilySize[69] <- 1
+combi$FamilyIDCleanUp[1106] <- '1Andersson 2'
+combi$FamilySize[1106] <- 1
+combi$FamilyIDCleanUp[147] <- '1Andersson 3'
+combi$FamilySize[147] <- 1
+combi$FamilyIDCleanUp[1212] <- '1Andersson 4'
+combi$FamilySize[1212] <- 1
+#Andrews
+combi$FamilyIDCleanUp[276, 628, 766] <- 'Andrews3'
+combi$FamilySize[276, 628, 766] <- 3
+#Betros
+combi$FamilyIDCleanUp[379, 1231] <- '2Betros'
+combi$FamilySize[379, 1231] <- 2
+#Buckley
+combi$FamilyIDCleanUp[998, 1005] <- '2Buckley'
+combi$FamilySize[998, 1005] <- 2
+#Cacic
+combi$FamilyIDCleanUp[472, 535, 929, 1202, 164, 501] <- '6Cacic'
+combi$FamilySize[472, 535, 929, 1202, 164, 501] <- 6
+#Canavan
+combi$FamilyIDCleanUp[502, 1280] <- '2Canavan'
+combi$FamilySize[502, 1280] <-  2
+#Carr
+combi$FamilyIDCleanUp[209, 1205] <- '2Carr'
+combi$FamilySize[209, 1205] <- 2
+#Carrau
+combi$FamilyIDCleanUp[84, 1295] <- '2Carrau'
+combi$FamilySize[84, 1295] <- 2
+#Coleff
+combi$FamilyIDCleanUp[515, 664] <- '2Coleff'
+combi$FamilySize[515, 664] <- 2
+#Connolly
+combi$FamilyIDCleanUp[290, 898] <- '2Connolly'
+combi$FamilySize[290, 898] <- 2
+#Cor
+combi$FamilyIDCleanUp[697, 948, 1226] <- '3Cor'
+combi$FamilySize[697, 948, 1226] <- 3
+#Daly
+combi$FamilyIDCleanUp[511, 1183] <- '2Daly'
+combi$FamilySize[511, 1183] <- 2
+#Dennis
+combi$FamilyIDCleanUp[321, 1177] <- '2Dennis'
+combi$FamilySize[321, 1177] <- 2
+#Flynn - ?
+combi$FamilyIDCleanUp[429, 826] <- '2Flynn'
+combi$FamilySize[429, 826] <- 2
+#Foley - ?
+combi$FamilyIDCleanUp[994, 1273] <- '2Foley'
+combi$FamilySize[994, 1273] <- 2
+#Harris
+combi$FamilyIDCleanUp[220, 571] <- '2Harris'
+combi$FamilySize[220, 571] <- 2
+#Jensen
+combi$FamilyIDCleanUp[641, 772, 193] <- '3Jensen'
+combi$FamilySize[641, 772, 193] <- 3
+#Keane
+combi$FamilyIDCleanUp[304, 908] <- '2Keane'
+combi$FamilySize[304, 908] <- 2
+#Kelly
+combi$FamilyIDCleanUp[301, 574] <- '2Kelly'
+combi$FamilySize[301, 574] <- 2
+#Lam
+combi$FamilyIDCleanUp[693, 827] <- '2Lam'
+combi$FamilySize[693, 827] <- 2
+#McGowan
+combi$FamilyIDCleanUp[23, 1098] <- '2McGowan'
+combi$FamilySize[23, 1098] <- 2
+#Nilsson - ?
+combi$FamilyIDCleanUp[316, 1089, 1153] <- '3Nilsson'
+combi$FamilySize[316, 1089, 1153] <- 3
+#Olsson
+combi$FamilyIDCleanUp[282, 397] <- '2Olsson'
+combi$FamilySize[282, 397] <- 2
+#Oreskovic
+combi$FamilyIDCleanUp[405, 726, 1172] <- '3Oreskovic'
+combi$FamilySize[405, 726, 1172] <- 3
+#Petroff
+combi$FamilyIDCleanUp[102, 878] <- '2Petroff'
+combi$FamilySize[102, 878] <- 2
+#Pokrnic
+combi$FamilyIDCleanUp[1161, 1195] <- '2Pokrnic'
+combi$FamilySize[1161, 1195] <- 2
+#Risien
+combi$FamilyIDCleanUp[539, 1274] <- '2Risien'
+combi$FamilySize[539, 1274] <- 2
+#Khalil
+combi$FamilyIDCleanUp[911, 694, 833] <- '3Saad Khalil'
+combi$FamilySize[911, 694, 833] <- 3
+#Watt
+combi$FamilyIDCleanUp[162, 1012] <- '2Watt'
+combi$FamilySize[162, 1012] <- 2
+#Zakarian
+combi$FamilyIDCleanUp[1028, 1063] <- '2Zakarian'
+combi$FamilySize[1028, 1063] <- 2
+#Arnold-Franchi
+combi$FamilyIDCleanUp[50, 354] <- '2Arnold-Franchi'
+combi$FamilySize[50, 354] <- 2
+#Bowerman
+combi$FamilyIDCleanUp[167, 357] <- '2Bowerman'
+combi$FamilySize[167, 357] <- 2
+#de Messemaeker
+combi$FamilyIDCleanUp[560, 1152] <- '2de Messemaeker'
+combi$FamilySize[560, 1152] <- 2
+#del Carlo
+combi$FamilyIDCleanUp[362, 907] <- '2del Carlo'
+combi$FamilySize[362, 907] <- 2
+#Duff Gordon
+combi$FamilyIDCleanUp[557, 600] <- '2Duff Gordon'
+combi$FamilySize[557, 600] <- 2
+#Duran y More
+combi$FamilyIDCleanUp[867, 1112] <- '2Duran y More'
+combi$FamilySize[867, 1112] <- 2
+#Harper 1
+combi$FamilyIDCleanUp[53, 646] <- '2Harper'
+combi$FamilySize[53, 646] <- 
+#Harper 2
+combi$FamilyIDCleanUp[597, 721, 849] <- '3Harper'
+combi$FamilySize[597, 721, 849] <- 3
+#Jacobsohn - Christy
+combi$FamilyIDCleanUp[218, 601] <- '4Jacobsohn Christy'
+combi$FamilySize[218, 601, 581, 1133] <- 4
+#Hirvonen
+combi$FamilyIDCleanUp[480, 896, 665] <- '3Hirvonen'
+combi$FamilySize[480, 896, 665] <- 3
+#McMillan
+combi$FamilyIDCleanUp[690, 731, 780, 1216] <- '4McMillan'
+combi$FamilySize[690, 731, 780, 1216] <- 4
+#Mock
+combi$FamilyIDCleanUp[926, 1014] <- '2Mock'
+combi$FamilySize[926, 1014] <- 2
+#Parrish
+combi$FamilyIDCleanUp[260, 881] <- '2Parrish'
+combi$FamilySize[260, 881] <- 2
+#Potter
+combi$FamilyIDCleanUp[311, 880, 1042] <- '3Potter'
+combi$FamilySize[] <- 3
+#Renouf - Jefferys
+combi$FamilyIDCleanUp[477, 727, 923, 1211] <- '2Renouf Jefferys'
+combi$FamilySize[477, 727, 923, 1211] <- 4
+#Eustis
+combi$FamilyIDCleanUp[497, 592] <- '2Eustis'
+combi$FamilySize[497, 592] <- 2
+#Strom - Persson - Lindell
+   #grep(('*Persson*'), combi$Name, value = TRUE)
+   #[1] "Strom, Mrs. Wilhelm (Elna Matilda Persson)"          "Persson, Mr. Ernst Ulrik"                           
+   #[3] "Lindell, Mrs. Edvard Bengtsson (Elin Gerda Persson)"
+   #[1] "Strom, Miss. Telma Matilda"                   "Strom, Mrs. Wilhelm (Elna Matilda Persson)" 
+combi$FamilyIDCleanUp[206, 252, 268] <- 3Strom Persson 
+combi$FamilySize[206, 252, 268] <- 3
+#Vander Planke
+combi$FamilyIDCleanUp[19, 39, 334, 1037] <- '4Vander Planke'
+combi$FamilySize[19, 39, 334, 1037] <- 4
+#Richards - Hocking
+combi$FamilyIDCleanUp[438, 775, 530, 944, 408, 832] <- '6Richards Hocking'
+combi$FamilySize[438, 775, 530, 944, 408, 832] <- 6
+#Lamson
+combi$FamilyIDCleanUp[572, 1248] <- '2Lamson'
+combi$FamilySize[572, 1248] <- 2
+#Davies // Sincock is likely 'help'
+combi$FamilyIDCleanUp[146, 550, 1222] <- '3Davies'
+combi$FamilySize[146, 550, 1222] <- 3
+#Davies - Lester
+combi$FamilyIDCleanUp[566, 812, 901] <- '3Davies Lester'
+combi$FamilySize[566, 812, 901] <- 3
+#Davies - 1 (w/2 SpSib - not found)
+combi$FamilyIDCleanUp[1079] <- '1Davies'
+combi$FamilySize[] <- '1Davies'
+#Baxter - Douglas
+combi$FamilyIDCleanUp[119, 300, 1076] <- '3Baxter Douglas'
+combi$FamilySize[119, 300, 1076]] <- 3
+#Frauenthal
+combi$FamilyIDCleanUp[335, 661, 1296] <- '3Frauenthal'
+combi$FamilySize[] <- 3
+#Frolicher
+combi$FamilyIDCleanUp[540, 588, 1289] <- '3Frolicher'
+combi$FamilySize[540, 588, 1289] <- 3
+#Gustafsson - Backstrom
+combi$FamilyIDCleanUp[105, 393, 86, 207] <- '4Gustafsson Backstrom'
+combi$FamilySize[105, 393, 86, 207] <- 4
+#Hirvonen - Lindqvist
+combi$FamilyIDCleanUp[480, 896, 665] <- '3Hirvonen Lindqvist'
+combi$FamilySize[] <- 
+#Jeffreys Denbury
+combi$FamilyIDCleanUp[923, 1211, 1230] <- '3Jeffreys Denbury'
+combi$FamilySize[923, 1211, 1230] <- 3
+#Kink Helmann - ?
+combi$FamilyIDCleanUp[70, 1268, 185, 1057] <- '4Kink Helmann'
+combi$FamilySize[70, 1268, 185, 1057] <- 4
+#Minahan 
+combi$FamilyIDCleanUp[246, 413, 1303] <- '3Minahan'
+combi$FamilySize[246, 413, 1303] <- 
+#Newell
+combi$FamilyIDCleanUp[216, 394, 660] <- '3Newell'
+combi$FamilySize[216, 394, 660] <- 3
+#Beckwith - Monypeny
+combi$FamilyIDCleanUp[249, 872, 137] <- '3Beckwith'
+combi$FamilySize[249, 872, 137] <- 3
+#Lahtinen - Sylven
+combi$FamilyIDCleanUp[313, 1041, 418] <- '3Lahtinen Sylven'
+combi$FamilySize[313, 1041, 418] <- 3
+#Thomas 1 - 1 missing
+combi$FamilyIDCleanUp[804, 996] <- '3Thomas 1missing'
+combi$FamilySize[804, 996] <- 3
+#Thomas 2
+combi$FamilyIDCleanUp[1008, 1025] <- '2Thomas'
+combi$FamilySize[1008, 1025] <- 2
+
+
